@@ -11,6 +11,9 @@ namespace UnityEngine.Rendering.Universal
         [Tooltip("Strength of the bloom filter.")]
         public MinFloatParameter intensity = new MinFloatParameter(0f, 0f);
 
+        [Tooltip("Radius of blur")]
+        public ClampedFloatParameter blurRadius = new ClampedFloatParameter(5.0f, 0.0f, 15.0f);
+
         [Tooltip("Changes the extent of veiling effects.")]
         public ClampedFloatParameter scatter = new ClampedFloatParameter(0.7f, 0f, 1f);
 
@@ -20,8 +23,8 @@ namespace UnityEngine.Rendering.Universal
         [Tooltip("Global tint of the bloom filter.")]
         public ColorParameter tint = new ColorParameter(Color.white, false, false, true);
 
-        [Tooltip("Use bicubic sampling instead of bilinear sampling for the upsampling passes. This is slightly more expensive but helps getting smoother visuals.")]
-        public BoolParameter highQualityFiltering = new BoolParameter(false);
+        // [Tooltip("Use bicubic sampling instead of bilinear sampling for the upsampling passes. This is slightly more expensive but helps getting smoother visuals.")]
+        // public BoolParameter highQualityFiltering = new BoolParameter(false);
 
         [Tooltip("Dirtiness texture to add smudges or dust to the bloom effect.")]
         public TextureParameter dirtTexture = new TextureParameter(null);

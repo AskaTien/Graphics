@@ -806,10 +806,12 @@ namespace UnityEngine.Rendering.Universal.Internal
             float thresholdKnee = threshold * 0.5f; // Hardcoded soft knee
 
             // Material setup
+            float blurRadius = m_Bloom.blurRadius.value;
             float scatter = Mathf.Lerp(0.05f, 0.95f, m_Bloom.scatter.value);
             var bloomMaterial = m_Materials.bloom;
+            bloomMaterial.SetFloat(ShaderConstants._Offset, blurRadius);
             bloomMaterial.SetVector(ShaderConstants._Params, new Vector4(scatter, clamp, threshold, thresholdKnee));
-            CoreUtils.SetKeyword(bloomMaterial, ShaderKeywordStrings.BloomHQ, m_Bloom.highQualityFiltering.value);
+            // CoreUtils.SetKeyword(bloomMaterial, ShaderKeywordStrings.BloomHQ, m_Bloom.highQualityFiltering.value);
             CoreUtils.SetKeyword(bloomMaterial, ShaderKeywordStrings.UseRGBM, m_UseRGBM);
 
             // Prefilter
@@ -836,8 +838,7 @@ namespace UnityEngine.Rendering.Universal.Internal
                 // Classic two pass gaussian blur - use mipUp as a temporary target
                 //   First pass does 2x downsampling + 9-tap gaussian
                 //   Second pass does 9-tap gaussian using a 5-tap filter + bilinear filtering
-                cmd.Blit(lastDown, mipUp, bloomMaterial, 1);
-                cmd.Blit(mipUp, mipDown, bloomMaterial, 2);
+                cmd.Blit(lastDown, mipDown, bloomMaterial, 1);
                 lastDown = mipDown;
             }
 
@@ -849,7 +850,7 @@ namespace UnityEngine.Rendering.Universal.Internal
                 int dst = ShaderConstants._BloomMipUp[i];
 
                 cmd.SetGlobalTexture(ShaderConstants._MainTexLowMip, lowMip);
-                cmd.Blit(highMip, BlitDstDiscardContent(cmd, dst), bloomMaterial, 3);
+                cmd.Blit(highMip, BlitDstDiscardContent(cmd, dst), bloomMaterial, 2);
             }
 
             // Cleanup
@@ -895,9 +896,9 @@ namespace UnityEngine.Rendering.Universal.Internal
             uberMaterial.SetTexture(ShaderConstants._LensDirt_Texture, dirtTexture);
 
             // Keyword setup - a bit convoluted as we're trying to save some variants in Uber...
-            if (m_Bloom.highQualityFiltering.value)
-                uberMaterial.EnableKeyword(dirtIntensity > 0f ? ShaderKeywordStrings.BloomHQDirt : ShaderKeywordStrings.BloomHQ);
-            else
+            // if (m_Bloom.highQualityFiltering.value)
+            //     uberMaterial.EnableKeyword(dirtIntensity > 0f ? ShaderKeywordStrings.BloomHQDirt : ShaderKeywordStrings.BloomHQ);
+            // else
                 uberMaterial.EnableKeyword(dirtIntensity > 0f ? ShaderKeywordStrings.BloomLQDirt : ShaderKeywordStrings.BloomLQ);
         }
 
@@ -1170,6 +1171,7 @@ namespace UnityEngine.Rendering.Universal.Internal
 
             public static readonly int _ColorTexture       = Shader.PropertyToID("_ColorTexture");
             public static readonly int _Params             = Shader.PropertyToID("_Params");
+            public static readonly int _Offset             = Shader.PropertyToID("_Offset");
             public static readonly int _MainTexLowMip      = Shader.PropertyToID("_MainTexLowMip");
             public static readonly int _Bloom_Params       = Shader.PropertyToID("_Bloom_Params");
             public static readonly int _Bloom_RGBM         = Shader.PropertyToID("_Bloom_RGBM");
